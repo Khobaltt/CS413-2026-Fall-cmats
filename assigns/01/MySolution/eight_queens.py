@@ -84,7 +84,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     main()
-
-test_case_1()
-test_case_2()
-test_case_3()
