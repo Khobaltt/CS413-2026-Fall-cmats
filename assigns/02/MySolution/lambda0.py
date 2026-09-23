@@ -116,6 +116,13 @@ def t0erm_size(term: t0erm) -> sint:
         return 1 + t0erm_size(term.arg2) + t0erm_size(term.arg3)
     elif isinstance(term, T0Mif0):
         return 1 + t0erm_size(term.arg1) + t0erm_size(term.arg2) + t0erm_size(term.arg3)
+    # added cases for T0Mpair, T0Mpfst, and T0Mpsnd
+    elif isinstance(term, T0Mpair):
+        return 1 + t0erm_size(term.arg1) + t0erm_size(term.arg2)
+    elif isinstance(term, T0Mpfst):
+        return 1 + t0erm_size(term.arg1)
+    elif isinstance(term, T0Mpsnd):
+        return 1 + t0erm_size(term.arg1)
     else:
         raise TypeError(f"t0erm_size({term})")
 ########################################################################
@@ -145,6 +152,13 @@ def t0erm_fvset(term: t0erm) -> fvset:
         return (t0erm_fvset(term.arg2) | t0erm_fvset(term.arg3))
     elif isinstance(term, T0Mif0):
         return (t0erm_fvset(term.arg1) | t0erm_fvset(term.arg2) | t0erm_fvset(term.arg3))
+    # added cases for T0Mpair, T0Mpfst, and T0Mpsnd
+    elif isinstance(term, T0Mpair):
+        return (t0erm_fvset(term.arg1) | t0erm_fvset(term.arg2))
+    elif isinstance(term, T0Mpfst):
+        return t0erm_fvset(term.arg1)
+    elif isinstance(term, T0Mpsnd):
+        return t0erm_fvset(term.arg1)
     else:
         raise TypeError(f"t0erm_fvset({term})")
 ########################################################################
@@ -189,6 +203,13 @@ def t0erm_subst0\
             return T0Mop2(term.arg1, subst0(term.arg2), subst0(term.arg3))
         elif isinstance(term, T0Mif0):
             return T0Mif0(subst0(term.arg1), subst0(term.arg2), subst0(term.arg3))
+        # added cases for T0Mpair, T0Mpfst, and T0Mpsnd
+        elif isinstance(term, T0Mpair):
+            return T0Mpair(subst0(term.arg1), subst0(term.arg2))
+        elif isinstance(term, T0Mpfst):
+            return T0Mpfst(subst0(term.arg1))
+        elif isinstance(term, T0Mpsnd):
+            return T0Mpsnd(subst0(term.arg1))
         else:
             raise TypeError(f"subst0({term})")
     return subst0(term)
@@ -272,10 +293,28 @@ def t0erm_cbv_evaluate0(term: t0erm) -> t0erm:
                     return T0Mbtf(t1.arg1 != t2.arg1)
             else:
                 raise TypeError(f"t0erm_cbv_evaluate0: {term.arg1} expects integers ({t1}, {t2})")
+        
         else:
             raise TypeError(f"t0erm_cbv_evaluate0({term})")
+    # Problem 2 cases
+    elif isinstance(term, T0Mpair):
+        t1 = t0erm_cbv_evaluate0(term.arg1)
+        t2 = t0erm_cbv_evaluate0(term.arg2)
+        return T0Mpair(t1, t2)
+    elif isinstance(term, T0Mpfst):
+        t1 = t0erm_cbv_evaluate0(term.arg1)
+        if isinstance(t1, T0Mpair):
+            return t1.arg1
+        else:
+            raise TypeError(f"t0erm_cbv_evaluate0: {term.arg1} expects a pair ({t1})")
+    elif isinstance(term, T0Mpsnd):
+        t1 = t0erm_cbv_evaluate0(term.arg1)
+        if isinstance(t1, T0Mpair):
+            return t1.arg2
+        else:
+            raise TypeError(f"t0erm_cbv_evaluate0: {term.arg1} expects a pair ({t1})")
     else:
-        raise TypeError(f"t0erm_cbv_evaluate0({term})")        
+        raise TypeError(f"t0erm_cbv_evaluate0({term})")    
 #
 ########################################################################
 ########################################################################
