@@ -46,12 +46,16 @@ The first version of the app does not need to handle or include:
 ## Functional Requirements
 FR-01: The system should provide a browser-based editor in which a user can enter, modify, and view LAMBDA source code.
 
+Source: "I imagine opening the page, typing or pasting a short program, and asking the system to compile or run it."
+
 Acceptance criteria:
 - Starting conditions: The environment is open in a supported browser, and a new or existing LAMBDA program is open
 - Action: The user enters LAMBDA source code into the editor, changes part of the code, and then views the editor contents
 - Expected result: The editor displays the entered and modified source code accurately, without losing or unexpectedly changing the user's edits.
 
 FR-02: The system should allow a user to load an existing LAMBDA program from a local file without manually re-entering its contents.
+
+Source: "Students may already have programs saved in files, and they should not have to retype them."
 
 Acceptance criteria:
 - Starting conditions: A valid LAMBDA source file exists on the user's computer
@@ -60,13 +64,21 @@ Acceptance criteria:
 - Failure scenario: The user selects a file that cannot be read or is not a valid supported LAMBDA source file
 - Expected result: The system reports that the file could not be loaded and takes no further action
 
-FR-03: The system should allow a user to save a LAMBDA program so that the user can return to it in a later session.	
+FR-03: The system should allow a user to save a LAMBDA program so that the user can return to it in a later session.
+
+Source: "They should also be able to keep a program they have written and return to it later."
 
 FR-04: The system should provide a set of example LAMBDA programs that a user can select and open for editing.
 
+Source: "Having a few examples to start from would help."
+
 FR-05: When a user opens an example for editing, the system should preserve access to the original example while allowing the user to modify a separate copy.
 
+Source: "Students should be able to modify an example without losing access to the original."
+
 FR-06: The system should allow a user to submit the current program to the LAMBDA compiler for compilation without executing the program.
+
+Source: "Sometimes I only want to check whether a program compiles."
 
 Acceptance criteria: 
 - Starting conditions: The editor contains a syntactically correct LAMBDA program that produces a result if executed
@@ -75,35 +87,49 @@ Acceptance criteria:
 
 FR-07: The system should allow a user to submit the current program to the LAMBDA compiler for compilation and execution when execution is requested.
 
-FR-08: The system should display the result of a successful program execution separately from compiler or system error messages.	
+Source: "At other times, I want to run it and see the answer."
+
+FR-08: The system should display the result of a successful program execution separately from compiler or system error messages.
+
+Source: "A compilation error and a failure while running the program should not look like the same thing."
 
 FR-09: If compilation fails, the system should display the compiler's error information and, when source-location information is provided, identify the corresponding location in the source program. 
+
+Source: "When the compiler reports where the problem occurred, the environment should help the student find that place in the source."
 
 Acceptance criteria:
 - Starting conditions: The editor contains a LAMBDA program with a compilation error, for which the compiler will return a source location for that error
 - Action: The user tries to compile the program
 - Expected result: The system displays the compiler's error information and identifies or highlights the corresponding location in the source code. The error is clearly presented as a compilation error rather than an execution failure
 
-FR-10: If execution fails after successful compilation, the system should identify the result as an execution failure and display the available failure information separately from compilation errors.	
+FR-10: The system should distinguish compiler-connection or environment failures from errors in the user's LAMBDA program and should inform the user when the compiler cannot be reached.
 
-FR-11: The system should distinguish compiler-connection or environment failures from errors in the user's LAMBDA program and should inform the user when the compiler cannot be reached.
+Source: "The environment itself may have problems too. If it cannot reach the compiler, I do not want students to think their program is wrong."
 
-FR-12: The system should allow a user to cancel an in-progress program execution. After cancellation, the system should indicate that the execution was stopped rather than presenting it as a normal program result.
+FR-11: The system should allow a user to cancel an in-progress program execution. After cancellation, the system should indicate that the execution was stopped rather than presenting it as a normal program result.
+
+Source: "There should be a way to stop it and move on."
 
 Acceptance criteria:
 - Starting conditions: A LAMBDA program is running and has not completed
 - Action: The user selects the stop/cancel the running program
 - Expected result: Program execution is terminated, the interface indicates that execution was stopped, and the system remains available for the user to edit or run another program
 
-FR-13: The system should allow a user to create, name, edit, save, and delete individual tests containing a LAMBDA program and an expected outcome.
+FR-12: The system should allow a user to create, name, edit, save, and delete individual tests containing a LAMBDA program and an expected outcome.
 
-FR-14: The system should support tests whose expected outcome is a successful result, such as an integer or Boolean value, and tests whose expected outcome is a compilation error.
+Source: "I would also like students to keep a collection of named tests."
 
-FR-15: The system should allow a user to organize multiple named tests into a test collection and execute the collection as a group.
+FR-13: The system should support tests whose expected outcome is a successful result, such as an integer or Boolean value, and tests whose expected outcome is a compilation error.
 
-FR-16: When executing a test collection, the system should continue processing remaining tests if an individual test fails, is rejected by the compiler, or cannot be completed.
+Source: "Some tests would expect an answer, such as an integer or a Boolean value. Others would intentionally contain an error and expect the compiler to reject the program."
 
-FR-17: After a test collection is executed, the system should provide a summary identifying which tests produced their expected outcomes and which did not, with enough information to investigate individual failures.
+FR-15: When executing a test collection, the system should continue processing remaining tests if an individual test fails, is rejected by the compiler, or cannot be completed.
+
+Source: "One troublesome test should not make the rest of the collection useless."
+
+FR-16: After a test collection is executed, the system should provide a summary identifying which tests produced their expected outcomes and which did not, with enough information to investigate individual failures.
+
+Source: "I would like a quick summary of which tests worked as expected, with enough detail to investigate the ones that did not."
 
 Acceptance Criteria:
 - Starting conditions: A test collection contains at least three tests: one expected to succeed, one expected to produce a compilation error, and one whose actual result differs from its expected result
@@ -112,11 +138,17 @@ Acceptance Criteria:
 - Failure scenario: One test cannot be completed because of an execution or compiler-connection failure
 - Expected result: The system records that test as unsuccessful or incomplete with an appropriate explanation and continues processing the remaining tests rather than abandoning the entire collection
 
-FR-18: The system should provide access to additional compiler-produced information, such as an abstract syntax tree or generated code, when that information is available through the compiler interface.
+FR-17: The system should provide access to additional compiler-produced information, such as an abstract syntax tree or generated code, when that information is available through the compiler interface.
 
-FR-19: The system should support a demonstration mode in which sample compiler responses can be displayed when the real compiler is unavailable, and those responses should be clearly identified as sample data rather than actual compilation results.
+Source: "For teaching, it would also be useful to inspect information the compiler produces, such as an abstract syntax tree or generated code, when that information is available."
 
-FR-20: The setup instructions should provide sufficient information for another person to install/start the first-version environment and connect the required compiler interface. The entire setup process should be documented
+FR-18: The system should support a demonstration mode in which sample compiler responses can be displayed when the real compiler is unavailable, and those responses should be clearly identified as sample data rather than actual compilation results.
+
+Source: "Using sample compiler responses for a demonstration would be acceptable at that stage, as long as nobody mistakes them for actual compilation results."
+
+FR-19: The setup instructions should provide sufficient information for another person to install/start the first-version environment and connect the required compiler interface. The entire setup process should be documented
+
+Source: "It should work in a browser students normally use, and the setup should be straightforward enough that another person can follow the instructions and get it running."
 
 ## Quality Requirements
 QR-01: The system should remain usable for editing and navigation while compilation or execution is in progress; a long-running program should not prevent the user from interacting with the page.
@@ -124,8 +156,6 @@ QR-01: The system should remain usable for editing and navigation while compilat
 QR-02: For ordinary actions such as editing text, selecting an example, opening a saved program, or switching between views, the system should provide visible feedback within 1 second under normal conditions. The 1-second target is a proposed acceptance target because the stakeholder did not specify a response time. (System response speed)
 
 QR-03: Editing a program, compiling/running it, viewing results, and running tests should all be operable using a keyboard, and important status or error information should not be communicated through color alone. (Accessibility)
-
-## Tracability and Review
 
 ## Questions and Assumptions
 
