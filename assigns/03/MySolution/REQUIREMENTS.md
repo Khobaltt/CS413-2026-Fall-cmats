@@ -115,11 +115,15 @@ Acceptance criteria:
 - Action: The user selects the stop/cancel the running program
 - Expected result: Program execution is terminated, the interface indicates that execution was stopped, and the system remains available for the user to edit or run another program
 
-FR-12: The system should allow a user to create, name, edit, save, and delete individual tests containing a LAMBDA program and an expected outcome.
+FR-12: The system shall associate each compilation or execution result with the version of the program that was submitted, so that users can determine which source version produced the result.
+
+Source: "If I change a program while an earlier run is still working, I need to know which version produced the result I am seeing."
+
+FR-13: The system should allow a user to create, name, edit, save, and delete individual tests containing a LAMBDA program and an expected outcome.
 
 Source: "I would also like students to keep a collection of named tests."
 
-FR-13: The system should support tests whose expected outcome is a successful result, such as an integer or Boolean value, and tests whose expected outcome is a compilation error.
+FR-14: The system should support tests whose expected outcome is a successful result, such as an integer or Boolean value, and tests whose expected outcome is a compilation error.
 
 Source: "Some tests would expect an answer, such as an integer or a Boolean value. Others would intentionally contain an error and expect the compiler to reject the program."
 
@@ -156,6 +160,17 @@ QR-01: The system should remain usable for editing and navigation while compilat
 QR-02: For ordinary actions such as editing text, selecting an example, opening a saved program, or switching between views, the system should provide visible feedback within 1 second under normal conditions. The 1-second target is a proposed acceptance target because the stakeholder did not specify a response time. (System response speed)
 
 QR-03: Editing a program, compiling/running it, viewing results, and running tests should all be operable using a keyboard, and important status or error information should not be communicated through color alone. (Accessibility)
+
+## Issues
+
+### 1. Specifications for saving programs are underspecified
+We don't know what format to save and load local LAMBDA source code files in. Until more concrete specifications are recieved from the stakeholder, it will be assumed that only source code will be saved and no other data. 
+
+### 2. Unverifiable requirements
+Some of my wording may be ambiguous (FR-01: "displays ... accurately"), making their acceptance criteria unverifiable in a concrete manner. Perhaps thinking of specific examples would help remedy this problem (for example, which specific keys are pressed). 
+
+### 3. Overlap in wording
+For certain requirements, similar wording may bake specific features ambiguous. Saving to a file and saving within the browser should probably be specified more clearly. Likewise, different types fo failures (compiler, execution, compiler connection) could get mixed up as is. 
 
 ## Questions and Assumptions
 
