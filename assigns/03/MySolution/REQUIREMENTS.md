@@ -46,7 +46,19 @@ The first version of the app does not need to handle or include:
 ## Functional Requirements
 FR-01: The system should provide a browser-based editor in which a user can enter, modify, and view LAMBDA source code.
 
+Acceptance criteria:
+- Starting conditions: The environment is open in a supported browser, and a new or existing LAMBDA program is open
+- Action: The user enters LAMBDA source code into the editor, changes part of the code, and then views the editor contents
+- Expected result: The editor displays the entered and modified source code accurately, without losing or unexpectedly changing the user's edits.
+
 FR-02: The system should allow a user to load an existing LAMBDA program from a local file without manually re-entering its contents.
+
+Acceptance criteria:
+- Starting conditions: A valid LAMBDA source file exists on the user's computer
+- Action: The user selects the file using the environment's file-loading function
+- Expected result: The contents of the selected file appear in the editor and are available for compilation or editing
+- Failure scenario: The user selects a file that cannot be read or is not a valid supported LAMBDA source file
+- Expected result: The system reports that the file could not be loaded and takes no further action
 
 FR-03: The system should allow a user to save a LAMBDA program so that the user can return to it in a later session.	
 
@@ -56,17 +68,32 @@ FR-05: When a user opens an example for editing, the system should preserve acce
 
 FR-06: The system should allow a user to submit the current program to the LAMBDA compiler for compilation without executing the program.
 
+Acceptance criteria: 
+- Starting conditions: The editor contains a syntactically correct LAMBDA program that produces a result if executed
+- Action: The user selects the compile-only operation
+- Expected result: The system sends the program to the compiler, reports whether compilation succeeded or failed, and does not execute the program
+
 FR-07: The system should allow a user to submit the current program to the LAMBDA compiler for compilation and execution when execution is requested.
 
 FR-08: The system should display the result of a successful program execution separately from compiler or system error messages.	
 
-FR-09: If compilation fails, the system should display the compiler's error information and, when source-location information is provided, identify the corresponding location in the source program.
+FR-09: If compilation fails, the system should display the compiler's error information and, when source-location information is provided, identify the corresponding location in the source program. 
+
+Acceptance criteria:
+- Starting conditions: The editor contains a LAMBDA program with a compilation error, for which the compiler will return a source location for that error
+- Action: The user tries to compile the program
+- Expected result: The system displays the compiler's error information and identifies or highlights the corresponding location in the source code. The error is clearly presented as a compilation error rather than an execution failure
 
 FR-10: If execution fails after successful compilation, the system should identify the result as an execution failure and display the available failure information separately from compilation errors.	
 
 FR-11: The system should distinguish compiler-connection or environment failures from errors in the user's LAMBDA program and should inform the user when the compiler cannot be reached.
 
 FR-12: The system should allow a user to cancel an in-progress program execution. After cancellation, the system should indicate that the execution was stopped rather than presenting it as a normal program result.
+
+Acceptance criteria:
+- Starting conditions: A LAMBDA program is running and has not completed
+- Action: The user selects the stop/cancel the running program
+- Expected result: Program execution is terminated, the interface indicates that execution was stopped, and the system remains available for the user to edit or run another program
 
 FR-13: The system should allow a user to create, name, edit, save, and delete individual tests containing a LAMBDA program and an expected outcome.
 
@@ -77,6 +104,13 @@ FR-15: The system should allow a user to organize multiple named tests into a te
 FR-16: When executing a test collection, the system should continue processing remaining tests if an individual test fails, is rejected by the compiler, or cannot be completed.
 
 FR-17: After a test collection is executed, the system should provide a summary identifying which tests produced their expected outcomes and which did not, with enough information to investigate individual failures.
+
+Acceptance Criteria:
+- Starting conditions: A test collection contains at least three tests: one expected to succeed, one expected to produce a compilation error, and one whose actual result differs from its expected result
+- Action: The user runs the entire test collection
+- Expected result: The system executes the tests and displays a summary showing which tests met their expected outcomes and which did not. The summary provides enough information to identify and investigate the failing test
+- Failure scenario: One test cannot be completed because of an execution or compiler-connection failure
+- Expected result: The system records that test as unsuccessful or incomplete with an appropriate explanation and continues processing the remaining tests rather than abandoning the entire collection
 
 FR-18: The system should provide access to additional compiler-produced information, such as an abstract syntax tree or generated code, when that information is available through the compiler interface.
 
