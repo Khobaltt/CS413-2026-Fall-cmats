@@ -82,7 +82,14 @@ FR-18: The system should provide access to additional compiler-produced informat
 
 FR-19: The system should support a demonstration mode in which sample compiler responses can be displayed when the real compiler is unavailable, and those responses should be clearly identified as sample data rather than actual compilation results.
 
+FR-20: The setup instructions should provide sufficient information for another person to install/start the first-version environment and connect the required compiler interface. The entire setup process should be documented
+
 ## Quality Requirements
+QR-01: The system should remain usable for editing and navigation while compilation or execution is in progress; a long-running program should not prevent the user from interacting with the page.
+
+QR-02: For ordinary actions such as editing text, selecting an example, opening a saved program, or switching between views, the system should provide visible feedback within 1 second under normal conditions. The 1-second target is a proposed acceptance target because the stakeholder did not specify a response time. (System response speed)
+
+QR-03: Editing a program, compiling/running it, viewing results, and running tests should all be operable using a keyboard, and important status or error information should not be communicated through color alone. (Accessibility)
 
 ## Tracability and Review
 
