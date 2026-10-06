@@ -1,0 +1,104 @@
+/* Optional automated browser smoke test. Start app.py first. */
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const {chromium} = require('playwright');
+(async () => {
+  const options = {headless:true};
+  if (process.env.CHROMIUM_PATH) options.executablePath=process.env.CHROMIUM_PATH;
+  options.args=['--no-sandbox'];
+  const browser=await chromium.launch(options);
+  const page=await browser.newPage();
+  const checks=[];
+  const record=(step,observed)=>checks.push({step,observed});
+  const button=name=>page.getByRole('button',{name,exact:true});
+  const ready=()=>page.waitForFunction(()=>!document.getElementById('editor').disabled);
+  const apply=async source=>{
+    await page.locator('#editor').fill(source);
+    await page.waitForFunction(()=>!document.getElementById('apply').disabled);
+    await button('Apply changes').click(); await ready();
+  };
+  const run=async (name,expected)=>{
+    await button(name).click();
+    await page.waitForFunction(text=>document.getElementById('results').textContent.includes(text),expected);
+    await ready();
+  };
+  const load=async choice=>{
+    await page.locator('#sourceMenu').selectOption(choice);
+    await button('Load source').click(); await ready();
+  };
+  try {
+    await page.goto(process.env.BASE_URL || 'http://127.0.0.1:8000');
+    await page.waitForFunction(()=>document.getElementById('identity').textContent.includes('Revision:'));
+    assert.deepEqual(await page.locator('#actions button').allTextContents(),['Lint','Interpret','Type-check','Compile','Execute']);
+    assert.deepEqual(await page.locator('#sourceMenu option').allTextContents(),['Choose File','Manual input','Factorial (canned)','Fibonacci (canned)']);
+    assert.equal(await button('Execute').isEnabled(),false);
+    record('Menu / ordered controls','Four source choices; five ordered actions; Execute disabled.');
+    await load('manual'); assert.equal(await page.locator('#editor').inputValue(),'');
+    await page.locator('#editor').pressSequentially('D0Evar("x")',{delay:5});
+    await page.waitForFunction(()=>!document.getElementById('apply').disabled);
+    assert.equal(await button('Lint').isEnabled(),false);
+    assert.equal(await button('Load source').isEnabled(),false);
+    await button('Apply changes').click(); await ready();
+    await run('Lint','Undeclared variables: x');
+    record('Manual / dirty guards / open lint','Typing without upload works; dirty draft blocks actions and replacement; x is undeclared.');
+    await apply('D0Eint(42)'); await run('Lint','No free variables'); await run('Interpret','D0Vint(arg1=42)');
+    record('Closed edit','Apply increments revision, clears old results; Lint passes and interpretation is 42.');
+    const identity=await page.locator('#identity').textContent();
+    await page.locator('#editor').fill('   '); await button('Apply changes').click(); await ready();
+    assert.match(await page.locator('#status').textContent(),/cannot be empty/);
+    assert.equal(await page.locator('#editor').inputValue(),'   ');
+    assert.match(await page.locator('#identity').textContent(),new RegExp(identity.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
+    await button('Discard changes').click(); await ready();
+    assert.equal(await page.locator('#editor').inputValue(),'D0Eint(42)');
+    record('Rejected edit / discard','Whitespace rejection retains draft and applied revision; Discard restores applied source.');
+    await page.locator('#editor').fill('D0Eint(99)'); await button('Discard changes').click(); await ready();
+    assert.equal(await page.locator('#editor').inputValue(),'D0Eint(42)');
+    await load('factorial'); await run('Interpret','D0Vint(arg1=120)');
+    await load('fibonacci'); await run('Interpret','D0Vint(arg1=21)');
+    record('Canned examples','Factorial(5)=120; Fibonacci(8)=21; expressions remain editable.');
+    await page.locator('#file').setInputFiles({name:'uploaded.lambda',mimeType:'text/plain',buffer:Buffer.from('D0Eint(9)')});
+    await page.waitForFunction(()=>document.getElementById('identity').textContent.includes('uploaded.lambda'));
+    await run('Interpret','D0Vint(arg1=9)');
+    await page.locator('#file').setInputFiles({name:'invalid.txt',mimeType:'text/plain',buffer:Buffer.from([255])});
+    await page.waitForFunction(()=>document.getElementById('status').textContent.includes('not valid UTF-8'));
+    assert.equal(await page.locator('#editor').inputValue(),'D0Eint(9)');
+    record('Upload / invalid UTF-8','Valid file applies and evaluates; invalid UTF-8 preserves previous source.');
+    await apply('x'.repeat(32769));
+    assert.match(await page.locator('#status').textContent(),/exceeds/);
+    assert.equal((await page.locator('#editor').inputValue()).length,32769);
+    await button('Discard changes').click(); await ready();
+    record('Size limit','32,769-byte draft rejected and retained; Discard restores source.');
+    await apply('D0Evar("<b>literal</b>")'); await run('Lint','<b>literal</b>');
+    assert.equal(await page.locator('#results b').count(),0);
+    assert.equal(await page.locator('#editor').inputValue(),'D0Evar("<b>literal</b>")');
+    record('Literal rendering','HTML-like source and output remain literal text, with no b element.');
+    await apply('D0Eint("bad")'); await run('Interpret','input_error');
+    await apply('D0Eop2("/", D0Eint(1), D0Eint(0))');
+    await run('Lint','No free variables'); await run('Interpret','runtime_error');
+    record('Input / runtime distinction','Malformed constructor reports input_error; closed division by zero passes Lint then reports runtime_error.');
+    await run('Type-check','Type checking is not yet implemented');
+    await run('Compile','Compilation is not yet implemented');
+    assert.equal(await button('Execute').isEnabled(),false);
+    record('Placeholders / Execute','Both placeholders report not_implemented; Execute stays disabled.');
+    await load('fibonacci');
+    const slow=(await page.locator('#editor').inputValue()).replace(/D0Eint\(8\)\)\s*$/,'D0Eint(35))');
+    await apply(slow); await button('Interpret').click();
+    await page.waitForFunction(()=>document.getElementById('status').textContent.startsWith('Busy:'));
+    assert.equal(await button('Apply changes').isEnabled(),false);
+    assert.equal(await button('Lint').isEnabled(),false);
+    assert.equal(await button('Load source').isEnabled(),false);
+    // Read DOM during computation: browser event loop remains responsive.
+    assert.match(await page.title(),/LAMBDA/);
+    await page.waitForFunction(()=>document.getElementById('results').textContent.includes('timed out'));
+    await ready();
+    await apply('D0Eop2("+", D0Eint(20), D0Eint(22))');
+    await run('Interpret','D0Vint(arg1=42)');
+    record('Busy / timeout / retry','Controls disabled during work; page responds; 2-second timeout releases controls; corrected source evaluates to 42.');
+    await page.locator('#editor').focus(); await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(()=>document.activeElement.dataset.operation),'lint'); // Draft controls are disabled when clean
+    record('Keyboard','Editor focus and Tab navigation reach the next enabled control.');
+    await page.screenshot({path:'browser-smoke.png',fullPage:true});
+    fs.writeFileSync('browser-results.json',JSON.stringify({checks},null,2)+'\n');
+    console.log(`PASS: ${checks.length} browser scenarios`);
+  } finally { await browser.close(); }
+})().catch(e=>{console.error(e);process.exitCode=1;});

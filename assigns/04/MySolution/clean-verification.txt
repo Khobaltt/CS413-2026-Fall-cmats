@@ -1,0 +1,17 @@
+Clean-checkout verification — October 5, 2026
+
+Repository was cloned into a new directory with git clone --no-local.
+A new .venv was created there with python3 -m venv .venv.
+.venv/bin/python -m pip install -r requirements.txt: PASS.
+.venv/bin/python -m unittest discover -s tests -v: PASS, 18 methods.
+.venv/bin/python app.py: PASS, loopback page and JSON state served.
+npm install --ignore-scripts: PASS, declared Playwright package installed.
+CHROMIUM_PATH=<external Chromium 133 executable> npm run test:browser:
+PASS: 12 browser scenarios, including actual timeout and retry.
+The normal Playwright browser download was unavailable in this environment;
+the README's existing-Chromium alternative was used successfully.
+
+Runtime: Python 3.12.14, Flask 3.1.2, Werkzeug 3.1.9,
+Node 24.19.0, Playwright 1.62.1, Chromium 133.0.6943.0.
+Supplied lambda1.py: byte-for-byte match verified with cmp.
+Submission excludes .venv, node_modules, caches, and browser executables.

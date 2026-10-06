@@ -1,0 +1,1 @@
+{"private":true,"description":"Optional browser smoke test; not a runtime dependency","scripts":{"test:browser":"node tests/browser_smoke.cjs"},"devDependencies":{"playwright":"1.62.1"}}

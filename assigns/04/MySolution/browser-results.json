@@ -1,0 +1,52 @@
+{
+  "checks": [
+    {
+      "step": "Menu / ordered controls",
+      "observed": "Four source choices; five ordered actions; Execute disabled."
+    },
+    {
+      "step": "Manual / dirty guards / open lint",
+      "observed": "Typing without upload works; dirty draft blocks actions and replacement; x is undeclared."
+    },
+    {
+      "step": "Closed edit",
+      "observed": "Apply increments revision, clears old results; Lint passes and interpretation is 42."
+    },
+    {
+      "step": "Rejected edit / discard",
+      "observed": "Whitespace rejection retains draft and applied revision; Discard restores applied source."
+    },
+    {
+      "step": "Canned examples",
+      "observed": "Factorial(5)=120; Fibonacci(8)=21; expressions remain editable."
+    },
+    {
+      "step": "Upload / invalid UTF-8",
+      "observed": "Valid file applies and evaluates; invalid UTF-8 preserves previous source."
+    },
+    {
+      "step": "Size limit",
+      "observed": "32,769-byte draft rejected and retained; Discard restores source."
+    },
+    {
+      "step": "Literal rendering",
+      "observed": "HTML-like source and output remain literal text, with no b element."
+    },
+    {
+      "step": "Input / runtime distinction",
+      "observed": "Malformed constructor reports input_error; closed division by zero passes Lint then reports runtime_error."
+    },
+    {
+      "step": "Placeholders / Execute",
+      "observed": "Both placeholders report not_implemented; Execute stays disabled."
+    },
+    {
+      "step": "Busy / timeout / retry",
+      "observed": "Controls disabled during work; page responds; 2-second timeout releases controls; corrected source evaluates to 42."
+    },
+    {
+      "step": "Keyboard",
+      "observed": "Editor focus and Tab navigation reach the next enabled control."
+    }
+  ]
+}

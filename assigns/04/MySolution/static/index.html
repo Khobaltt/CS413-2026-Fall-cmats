@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LAMBDA Workbench</title><link rel="stylesheet" href="/style.css"><script src="/view.js" defer></script></head>
+<body><main><h1>LAMBDA Workbench</h1><p>Load or enter a constructor expression, apply it, then run a tool.</p>
+<fieldset id="sourceControls"><legend>Load source</legend><label for="sourceMenu">Source option</label><select id="sourceMenu"><option value="file">Choose File</option><option value="manual">Manual input</option><option value="factorial">Factorial (canned)</option><option value="fibonacci">Fibonacci (canned)</option></select><button id="load">Load source</button><label for="file">Choose File (UTF-8 text)</label><input id="file" type="file" accept=".txt,.lambda,.py,text/plain"></fieldset>
+<p id="identity"></p><label for="editor">Source editor (maximum 32,768 UTF-8 bytes)</label><textarea id="editor" rows="16" spellcheck="false"></textarea>
+<div class="row"><button id="apply">Apply changes</button><button id="discard">Discard changes</button></div>
+<div id="actions" class="row"><button data-operation="lint">Lint</button><button data-operation="interpret">Interpret</button><button data-operation="typecheck">Type-check</button><button data-operation="compile">Compile</button><button data-operation="execute" disabled>Execute</button></div>
+<p>Execute tests generated code. It is unavailable until compilation is implemented and produces an artifact.</p>
+<p id="status" role="status" aria-live="polite"></p><h2>Textual results</h2><pre id="results" aria-live="polite"></pre></main></body></html>
