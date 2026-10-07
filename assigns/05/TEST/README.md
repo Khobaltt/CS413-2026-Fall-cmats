@@ -3,13 +3,15 @@
 Run from the assignment directory with Python 3.12+ and Node.js 18+:
 
 ```sh
-make -C TEST test         # Run both suites (also the default target).
-make -C TEST test-py  # Run only Python tests.
-make -C TEST test-js      # Run only JavaScript tests.
+make -C TEST test         # Run Python tests (also the default target).
+make -C TEST test-py      # Run Python tests explicitly.
+make -C NODE/TEST test    # Run JavaScript tests.
 ```
 
-Inside `TEST`, use `make test`, `make test-py`, or `make test-js`.
-Override runtimes if needed: `make -C TEST test PYTHON=python3.12 NODE=node`.
+Inside `TEST`, use `make test` or `make test-py` for Python tests.
+Inside `NODE/TEST`, use `make test` for JavaScript tests.
+Override runtimes if needed with `make -C TEST test PYTHON=python3.12`
+or `make -C NODE/TEST test NODE=node`.
 The equivalent direct commands are:
 
 ```sh

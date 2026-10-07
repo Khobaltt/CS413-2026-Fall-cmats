@@ -21,7 +21,7 @@ Week~5:
 2026/10/01: MVC for UI Design, Vistor Pattern
 ------------------------------------------------------------------
 Week~6:
-2026/10/06: Chapter~8/7: Testing/Implementation
+2026/10/06: Vistor Pattern (see lambda1_vp.py)
 2026/10/08: Chapter~8/7: Testing/Implementation
 ------------------------------------------------------------------
 Week~7:
