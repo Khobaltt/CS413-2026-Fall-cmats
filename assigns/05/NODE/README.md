@@ -19,5 +19,5 @@ make -C NODE/TEST test
 
 Or run `make test` inside `NODE/TEST`. The tests use the shared
 `../TEST/cases.json` fixture, located outside `NODE`, for the same behavioral
-examples as the Python tests. The existing `make -C TEST test` command still
-runs both Python and JavaScript suites.
+examples as the Python tests. Run the Python suite separately with
+`make -C TEST test`.
