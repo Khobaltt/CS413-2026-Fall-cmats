@@ -4,7 +4,7 @@
 
 ## Setup and independent test commands
 
-Run all commands from the directory `CS413-2026-Fall-cmats/assigns/05`, where `lambda1_vp.py` lives.
+Run all commands from `CS413-2026-Fall-cmats`, the assignment directory.
 
 ```sh
 # create an isolated environment and install the only testing dependency
@@ -12,10 +12,10 @@ python3 -m venv .venv
 .venv/bin/python -m pip install pytest
 
 # run only the standard-library TestCase suite
-.venv/bin/python -m unittest discover -s MySolution -p 'test_unittest.py' -v
+PYTHONPATH=assigns/05 python3 -m unittest discover -s assigns/05/MySolution -p 'test_unittest.py' -v
 
 # run only the pytest-function suite, independently of the unittest suite
-.venv/bin/python -m pytest MySolution/test_pytest.py -q
+PYTHONPATH=assigns/05 python3 -m pytest assigns/05/MySolution/test_pytest.py -q
 ```
 
 ## Example
