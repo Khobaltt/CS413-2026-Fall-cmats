@@ -77,3 +77,77 @@ class PrettyPrintVisitor(D0ExpVisitor[str]):
 # public entry point: use a fresh printing visitor for this expression
 def d0exp_pretty(expression: d0exp) -> str:
     return expression.accept(PrettyPrintVisitor())
+
+# collects every variable occurance and binder declaration (both free and bound)
+class AllNamesVisitor(D0ExpVisitor[set[str]]):
+
+    # numbers contain no names
+    def visit_int(self, e):
+        return set()
+
+    # boolean literals contain no names
+    def visit_btf(self, e):
+        return set()
+
+    # keep this occurrence even if a surrounding binder binds it
+    def visit_var(self, e):
+        return {e.arg1}
+
+    # include the binder even when its name never appears in the body
+    def visit_lam(self, e):
+        return {e.arg1} | e.arg2.accept(self)
+
+    # both declared names matter for freshness, including equal names
+    def visit_fix(self, e):
+        return {e.arg1, e.arg2} | e.arg3.accept(self)
+
+    # names from both regions and the declaration are all reserved
+    def visit_let(self, e):
+        return {e.arg1} | e.arg2.accept(self) | e.arg3.accept(self)
+
+    # the operator text is not a variable or binder name
+    def visit_op1(self, e):
+        return e.arg1.accept(self)
+
+    # set union combines names without keeping duplicates
+    def visit_op2(self, e):
+        return e.arg1.accept(self) | e.arg2.accept(self)
+    
+    # both the function expression and argument may contain names
+    def visit_app(self, e):
+        return e.arg1.accept(self) | e.arg2.accept(self)
+
+    # every branch matters, even if evaluation would skip a branch
+    def visit_if0(self, e):
+        return e.arg1.accept(self) | e.arg2.accept(self) | e.arg3.accept(self)
+
+    # both pair components contribute names
+    def visit_pair(self, e):
+        return e.arg1.accept(self) | e.arg2.accept(self)
+
+    # projections introduces no names of their own
+    def visit_pfst(self, e):
+        return e.arg1.accept(self)
+
+    # collect names in the projected expression
+    def visit_psnd(self, e):
+        return e.arg1.accept(self)
+
+# reserve names globally within one substitution, with a counter per base
+class FreshNames:
+
+    # copy the set so the generator owns its state
+    def __init__(self, reserved: set[str]):
+        self.used = set(reserved)
+        self.counters: dict[str, int] = {}
+
+    # try base_1, base_2, ...; skip original names and earlier generated names
+    def new(self, base: str) -> str:
+        number = self.counters.get(base, 0) + 1
+        candidate = f"{base}_{number}"
+        while candidate in self.used:
+            number += 1
+            candidate = f"{base}_{number}"
+        self.counters[base] = number
+        self.used.add(candidate)
+        return candidate
