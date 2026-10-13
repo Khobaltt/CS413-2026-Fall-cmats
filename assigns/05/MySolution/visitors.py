@@ -151,3 +151,85 @@ class FreshNames:
         self.counters[base] = number
         self.used.add(candidate)
         return candidate
+
+# shared syntax-copying methods; subclasses override scope-sensitive forms
+class RebuildVisitor(D0ExpVisitor[d0exp]):
+
+    # unchanged leaves can safely be reused because we never modify them
+    def visit_int(self, e):
+        return e
+
+    # reusing this literal preserves its exact value
+    def visit_btf(self, e):
+        return e
+
+    # the default copying operation leaves variable names alone
+    def visit_var(self, e):
+        return e
+
+    # rebuild the operator with a transformed child, preserving its name
+    def visit_op1(self, e):
+        return D0Eop1(e.name, e.arg1.accept(self))
+
+    # visit the left child before the right for deterministic fresh naming
+    def visit_op2(self, e):
+        return D0Eop2(e.name, e.arg1.accept(self), e.arg2.accept(self))
+
+    # transform both parts without applying the function
+    def visit_app(self, e):
+        return D0Eapp(e.arg1.accept(self), e.arg2.accept(self))
+
+    # retain the condition and both branches; nothing is evaluated
+    def visit_if0(self, e):
+        return D0Eif0(e.arg1.accept(self), e.arg2.accept(self), e.arg3.accept(self))
+
+    # build a new pair from its transformed children
+    def visit_pair(self, e):
+        return D0Epair(e.arg1.accept(self), e.arg2.accept(self))
+
+    # keep the projection constructor in the result
+    def visit_pfst(self, e):
+        return D0Epfst(e.arg1.accept(self))
+
+    # the second projection follows the same copying rule
+    def visit_psnd(self, e):
+        return D0Epsnd(e.arg1.accept(self))
+
+    # default reconstruction; specialized visitors handle binding context
+    def visit_lam(self, e):
+        return D0Elam(e.arg1, e.arg2.accept(self))
+
+    # keep both names while rebuilding the body
+    def visit_fix(self, e):
+        return D0Efix(e.arg1, e.arg2, e.arg3.accept(self))
+
+    # visit the initializer before the body
+    def visit_let(self, e):
+        return D0Elet(e.arg1, e.arg2.accept(self), e.arg3.accept(self))
+
+# rename occurrences bound by an outer binder, stopping at shadowing
+class RenameVisitor(RebuildVisitor):
+
+    # this map describes surrounding binders whose names have changed
+    def __init__(self, renames: dict[str, str]):
+        self.renames = dict(renames)
+
+    # nested binder hides an outer binding with the same name
+    def under(self, *bound_names: str) -> RenameVisitor:
+        return RenameVisitor({old: new for old, new in self.renames.items() if old not in bound_names})
+
+    # change only occurrences still connected to a renamed outer binder
+    def visit_var(self, e):
+        return D0Evar(self.renames[e.arg1]) if e.arg1 in self.renames else e
+
+    # leave this nested declaration alone and hide it from the body's map
+    def visit_lam(self, e):
+        return D0Elam(e.arg1, e.arg2.accept(self.under(e.arg1)))
+
+    # either fix name can hide an outer name; equal names hide it once
+    def visit_fix(self, e):
+        return D0Efix(e.arg1, e.arg2, e.arg3.accept(self.under(e.arg1, e.arg2)))
+
+    # the outer binding remains visible in the initializer, not the body
+    def visit_let(self, e):
+        return D0Elet(e.arg1, e.arg2.accept(self), e.arg3.accept(self.under(e.arg1)))
