@@ -73,3 +73,7 @@ class PrettyPrintVisitor(D0ExpVisitor[str]):
     # this is the second projection's syntax, not an evaluated result
     def visit_psnd(self, e):
         return f"(snd {e.arg1.accept(self)})"
+
+# public entry point: use a fresh printing visitor for this expression
+def d0exp_pretty(expression: d0exp) -> str:
+    return expression.accept(PrettyPrintVisitor())
