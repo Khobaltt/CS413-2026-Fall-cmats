@@ -233,3 +233,56 @@ class RenameVisitor(RebuildVisitor):
     # the outer binding remains visible in the initializer, not the body
     def visit_let(self, e):
         return D0Elet(e.arg1, e.arg2.accept(self), e.arg3.accept(self.under(e.arg1)))
+
+# carry a target, replacement, and one shared fresh-name supply
+class SubstitutionVisitor(RebuildVisitor):
+
+    # replacement free names are the names that surrounding binders could capture
+    def __init__(self, variable: str, replacement: d0exp, fresh: FreshNames):
+        self.variable = variable
+        self.replacement = replacement
+        self.replacement_free = d0exp_fvset(replacement)
+        self.fresh = fresh
+
+    # return the replacement itself; do not traverse it for more substitutions
+    def visit_var(self, e):
+        return self.replacement if e.arg1 == self.variable else e
+
+    # bound targets cannot be replaced, absent free targets needs no renaming
+    def scoped_body(self, names: tuple[str, ...], body: d0exp):
+        if self.variable in names or self.variable not in d0exp_fvset(body):
+            return names, body
+        renames = {}
+        for name in names:
+            # process function name before parameter; equal fix names share one rename
+            if name in self.replacement_free and name not in renames:
+                renames[name] = self.fresh.new(name)
+        if renames:
+            # first rename old bound occurrences, then insert the free replacement
+            body = body.accept(RenameVisitor(renames))
+        changed_names = tuple(renames.get(name, name) for name in names)
+        return changed_names, body.accept(self)
+
+    # the parameter binds only inside this lambda's body
+    def visit_lam(self, e):
+        names, body = self.scoped_body((e.arg1,), e.arg2)
+        return D0Elam(names[0], body)
+
+    # renaming equal binders to the same fresh name preserves parameter shadowing
+    def visit_fix(self, e):
+        names, body = self.scoped_body((e.arg1, e.arg2), e.arg3)
+        return D0Efix(names[0], names[1], body)
+
+    # always transform the initializer, even if the declaration binds the target
+    def visit_let(self, e):
+        initializer = e.arg2.accept(self)
+        names, body = self.scoped_body((e.arg1,), e.arg3)
+        return D0Elet(names[0], initializer, body)
+
+# replace free target occurrences, preserving inputs and lexical scope
+def d0exp_substitute(expression: d0exp, variable: str, replacement: d0exp) -> d0exp:
+    # reserve every original name before generating anything, including unused binders
+    collector = AllNamesVisitor()
+    reserved = expression.accept(collector) | replacement.accept(collector) | {variable}
+    visitor = SubstitutionVisitor(variable, replacement, FreshNames(reserved))
+    return expression.accept(visitor)
