@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 # import from supplied visitor-based implementation
-from .. import lambda1_vp
 from lambda1_vp import (
     D0ExpVisitor, 
     d0exp, 
