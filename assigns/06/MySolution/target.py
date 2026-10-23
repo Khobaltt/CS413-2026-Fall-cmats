@@ -8,6 +8,7 @@ Evaluation, substitution, and Church encodings go in separate files.
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import TypeAlias
+import re
 
 @dataclass(frozen=True)
 class Var:
@@ -73,13 +74,11 @@ def validateTarget(term: object) -> None:
 
         # check that name is a string
         if not isinstance(name, str):
-            raise ValueError("")
+            raise ValueError("Expected a string, got {name!r}")
 
-        # TODO: check that name follows identifier policy
-        #
-        #
-        #
-        #
+        # check that name follows identifier policy
+        if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name) is None:
+            raise ValueError(f"Invalid identifier: {name!r}")
 
     # Var: check name
     if type(term) is Var:
