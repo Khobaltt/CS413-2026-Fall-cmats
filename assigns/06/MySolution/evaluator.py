@@ -16,6 +16,8 @@ from typing import Literal
 from target import Var, Lam, App, validateTarget
 from scope import freeVariables, substitute
 
+import lambda1_vp as source
+
 
 TargetTerm = Var | Lam | App
 
@@ -24,8 +26,8 @@ TargetTerm = Var | Lam | App
 class EvaluationResult:
     status: Literal["completed", "exhausted"]
 
-    # Completed: resulting lambda value.
-    # Exhausted: expression after all permitted steps.
+    # Completed: resulting lambda value
+    # Exhausted: expression after all permitted steps
     term: TargetTerm
 
     steps: int
