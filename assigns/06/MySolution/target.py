@@ -1,8 +1,8 @@
 """
-Pure lambda-calculus target AST and printer scaffold.
+Pure lambda-calculus target AST and printer
 
-Only variables, lambdas, and applications belong in this AST.
-Evaluation, substitution, and Church encodings go in separate files.
+Only variables, lambdas, and applications belong in this AST
+Evaluation, substitution, and Church encodings go in separate files
 """
 
 from __future__ import annotations
@@ -74,7 +74,7 @@ def validateTarget(term: object) -> None:
 
         # check that name is a string
         if not isinstance(name, str):
-            raise ValueError("Expected a string, got {name!r}")
+            raise ValueError(f"Expected a string, got {name!r}")
 
         # check that name follows identifier policy
         if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name) is None:

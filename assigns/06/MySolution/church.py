@@ -283,7 +283,7 @@ def churchLessEqual() -> TargetTerm:
     # Apply churchIsZero() to that expression
     temp = App(churchIsZero(), temp)
 
-    # TODO: Wrap the expression in lambdas for m and n
+    # Wrap the expression in lambdas for m and n
     return Lam('m', Lam('n', temp))
 
 

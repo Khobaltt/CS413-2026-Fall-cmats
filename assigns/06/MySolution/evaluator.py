@@ -345,8 +345,8 @@ def evaluate(
     """
     Shared evaluation entry point
 
-    Will be extended with source cases later
-    Its return annotation may also need extending for source results
+    Source expressions return source-language values
+    Target terms require a budget and return an EvaluationResult
     """
 
     # Recognize target nodes

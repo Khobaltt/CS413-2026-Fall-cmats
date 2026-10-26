@@ -105,7 +105,7 @@ def _renameBound(body: object, oldName: str, newName: str):
         )
 
     if type(body) is Lam:
-        # TODO: If body.name == oldName, return body unchanged
+        # If body.name == oldName, return body unchanged
         # Otherwise preserve body.name, recursively rename body.body
         # Return a Lam
         if body.name == oldName:
