@@ -37,45 +37,62 @@ def stepTarget(term: TargetTerm) -> TargetTerm:
     """
     Perform exactly one beta-value contraction
 
-    Assumed: term is not already a lambda value
+    Use an explicit context stack instead of recursive calls
+    Evaluate function first, then argument, and never step beneath a lambda
     """
 
-    if type(term) is Var:
-        # Raise ValueError because a free variable cannot evaluate to a lambda value
-        raise ValueError(f"cannot evaluate free variable: {term.name}")
+    # Save the surrounding applications while searching for the next redex
+    # Each entry records which child is being evaluated and preserves its sibling
+    context = []
+    current = term
 
-    elif type(term) is App:
+    while True:
 
-        if type(term.function) is not Lam:
-            # Reduce the function by one step
-            # Return a new App containing the reduced function and the original argument
-            return App(
-                stepTarget(term.function),
-                term.argument
+        if type(current) is Var:
+            # A free variable cannot evaluate to a lambda value
+            raise ValueError(f"cannot evaluate free variable: {current.name}")
+
+        if type(current) is not App:
+            # A lambda is already a value; unsupported nodes cannot be stepped
+            raise TypeError(f"Unsupported target node: {type(current).__name__}")
+
+        if type(current.function) is not Lam:
+            # Evaluate the function before touching its argument
+            # Save the argument so this application can be rebuilt afterward
+            context.append(('function', current.argument))
+            current = current.function
+
+        elif type(current.argument) is not Lam:
+            # The function is a value; evaluate its argument next
+            # Save the function so this application can be rebuilt afterward
+            context.append(('argument', current.function))
+            current = current.argument
+
+        else:
+            # Both children are lambda values, so perform one beta-value contraction
+            # (lam x. body) value -> body[x := value]
+            current = substitute(
+                current.function.body,
+                current.function.name,
+                current.argument
             )
 
-        elif type(term.argument) is not Lam:
-            # Reduce the argument by one step
-            # Return a new App containing the original function and the reduced argument
-            return App(
-                term.function,
-                stepTarget(term.argument)
-            )
+            # Rebuild the saved context without performing any additional contraction
+            break
 
-        # Both the function and argument are lambdas
-        # Perform beta-value contraction using substitute():
-        #
-        # (lam x. body) value -> body[x := value]
-        #
-        # Return the substituted body without evaluating it further
-        return substitute(
-            term.function.body,
-            term.function.name,
-            term.argument
-        )
+    while context:
 
-    # Raise TypeError for unsupported nodes or an attempt to step an already completed lambda
-    raise TypeError(f"Unsupported target node: {type(term).__name__}")
+        position, sibling = context.pop()
+
+        if position == 'function':
+            # current replaces the function; preserve the original argument
+            current = App(current, sibling)
+
+        else:
+            # current replaces the argument; preserve the original function
+            current = App(sibling, current)
+
+    return current
 
 def evaluateTarget(
     term: TargetTerm,
@@ -123,6 +140,7 @@ def lookupSource(
     current = environment
 
     while isinstance(current, source.ENVcns):
+
         if current.arg1 == name:
             return current.arg2
 
@@ -137,6 +155,7 @@ class SourceEvaluator(source.D0ExpVisitor[source.D0V000]):
         self,
         environment: source.ENV000 | None = None,
     ) -> None:
+
         if environment is None:
             environment = source.ENVnil()
 
@@ -150,6 +169,7 @@ class SourceEvaluator(source.D0ExpVisitor[source.D0V000]):
         return source.D0Vint(expression.arg1)
 
     def visit_btf(self, expression):
+
         if type(expression.arg1) is not bool:
             raise ValueError(f"Invalid boolean literal: {expression.arg1!r}")
 
@@ -261,6 +281,7 @@ class SourceEvaluator(source.D0ExpVisitor[source.D0V000]):
         return pair.arg2
 
     def visit_op1(self, expression):
+
         if expression.name != "not":
             raise ValueError(f"Unsupported unary operator: {expression.name!r}")
 
@@ -286,6 +307,7 @@ class SourceEvaluator(source.D0ExpVisitor[source.D0V000]):
         left = expression.arg1.accept(self)
 
         if operator in ("and", "or"):
+
             if not isinstance(left, source.D0Vbtf):
                 raise TypeError(f"{operator!r} requires boolean operands")
 
@@ -339,18 +361,19 @@ class SourceEvaluator(source.D0ExpVisitor[source.D0V000]):
         raise ValueError(f"Unsupported operator: {operator!r}")
 
 def evaluate(
-    term: object, 
+    term: object,
     budget: int | None = None,
 ) -> EvaluationResult | source.D0V000:
     """
     Shared evaluation entry point
 
-    Source expressions return source-language values
-    Target terms require a budget and return an EvaluationResult
+    Source expressions return source-language values.
+    Target terms require a budget and return an EvaluationResult.
     """
 
     # Recognize target nodes
     if type(term) in (Var, Lam, App):
+
         if budget is None:
             raise ValueError("Target evaluation requires a budget")
         return evaluateTarget(term, budget)

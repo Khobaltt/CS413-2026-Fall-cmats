@@ -31,6 +31,7 @@ def churchTrue() -> TargetTerm:
     TRUE = lam(t). lam(f). t
     Selects the first of two arguments
     """
+
     return Lam('t', Lam('f', Var('t')))
 
 def churchFalse() -> TargetTerm:
@@ -38,6 +39,7 @@ def churchFalse() -> TargetTerm:
     FALSE = lam(t). lam(f). f
     Selects the second of two arguments
     """
+
     return Lam('t', Lam('f', Var('f')))
 
 def churchNatural(number: int) -> TargetTerm:
@@ -56,6 +58,7 @@ def churchNatural(number: int) -> TargetTerm:
 
     # Wrap the body in App() number times
     for _ in range(number):
+
         temp = App(Var('f'), temp)
 
     # Wrap the finished body in lam(f). lam(x).
@@ -167,7 +170,7 @@ def churchIsZero() -> TargetTerm:
     Zero returns the starting TRUE
     A positive numeral applies the function and returns FALSE
     """
-    
+
     temp = App(Var('n'), Lam('ignored', churchFalse()))
 
     return Lam('n', App(temp, churchTrue()))
@@ -202,6 +205,7 @@ def churchSubtraction() -> TargetTerm:
     temp = App(App(Var('n'), churchPredecessor()), Var('m'))
 
     # Wrap the expression in lambdas for m and n
+    # Both operands are bound here, so the completed combinator remains closed
     return Lam('m', Lam('n', temp))
 
 

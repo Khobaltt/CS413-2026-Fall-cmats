@@ -1,8 +1,9 @@
 """
-Pure lambda-calculus target AST and printer
+Pure lambda-calculus target AST and printer.
 
-Only variables, lambdas, and applications belong in this AST
-Evaluation, substitution, and Church encodings go in separate files
+Only variables, lambdas, and applications belong in this AST.
+Evaluation, substitution, and Church encodings go in separate files.
+Target traversal uses explicit stacks rather than Python recursion.
 """
 
 from __future__ import annotations
@@ -10,99 +11,120 @@ from dataclasses import dataclass
 from typing import TypeAlias
 import re
 
+
 @dataclass(frozen=True)
 class Var:
     """A variable reference: x"""
+
     name: str
+
 
 @dataclass(frozen=True)
 class Lam:
     """A function with one parameter: (lam x. body)"""
+
     name: str
     body: Term
+
 
 @dataclass(frozen=True)
 class App:
     """A function applied to one argument: (fn arg)"""
+
     function: Term
     argument: Term
 
+
 # Term is a type annotation, not an additional AST constructor
-# Future annotations allow the classes above to refer to this alias
 Term: TypeAlias = Var | Lam | App
+
 
 def pretty(term: Term) -> str:
     """
-    Return the required fully parenthesized target notation
-    Reference:
+    Return the required fully parenthesized notation without evaluating.
+
     Var("x")                          -> "x"
     Lam("x", Var("x"))                -> "(lam x. x)"
     App(Lam("x", Var("x")), Var("y")) -> "((lam x. x) y)"
-
-    Printing must describe the tree without evaluating or modifying it
     """
-    if isinstance(term, Var):
-        # Print variable directly
-        return term.name
 
-    if isinstance(term, Lam):
-        # Recursively print term.body
-        # Combine it with term.name using exactly: (lam name. body)
-        return f"(lam {term.name}. {pretty(term.body)})"
+    # Accumulate text fragments, then join them once after the traversal
+    pieces = []
+    # A term action visits syntax; a text action writes saved punctuation
+    pending = [('term', term)]
 
-    if isinstance(term, App):
-        # Recursively print term.function and term.argument
-        # Combine them with a space and surrounding parentheses: (fn arg)
-        return f"({pretty(term.function)} {pretty(term.argument)})"
+    while pending:
 
-    raise TypeError(f"Unsupported target node: {type(term).__name__}")
+        action, current = pending.pop()
+
+        if action == 'text':
+            # Write punctuation after the preceding child has finished
+            pieces.append(current)
+
+        elif type(current) is Var:
+            # Print the variable name directly
+            pieces.append(current.name)
+
+        elif type(current) is Lam:
+            # Print the opening lambda, then its body, then the saved closing parenthesis
+            pieces.append(f'(lam {current.name}. ')
+            pending.append(('text', ')'))
+            pending.append(('term', current.body))
+
+        elif type(current) is App:
+            # Print (function argument), preserving both the space and parentheses
+            pieces.append('(')
+            # Push in reverse order so the function prints first.
+            pending.append(('text', ')'))
+            pending.append(('term', current.argument))
+            pending.append(('text', ' '))
+            pending.append(('term', current.function))
+
+        else:
+            raise TypeError(f'Unsupported target node: {type(current).__name__}')
+    # Printing constructs text only; it never evaluates or changes the AST
+    return ''.join(pieces)
+
 
 def validateTarget(term: object) -> None:
     """
-    Check target syntax recursively 
+    Check pure target syntax and identifier names using an explicit stack.
 
-    Return None when the entire tree is valid
-    Raise TypeError for an unsupported node
-    Raise ValueError for a bad name
-    
-    Free variables are considered valid syntax
+    Return None for valid syntax, including open terms. Raise TypeError for
+    unsupported nodes and ValueError for invalid names.
     """
-    
-    # Do not reserve names such as PLUS: they may be legitimate variables.
 
-    def validateName(name: object) -> None:
+    # Keep the nodes that still need structural validation
+    pending = [term]
 
-        # check that name is a string
-        if not isinstance(name, str):
-            raise ValueError(f"Expected a string, got {name!r}")
+    while pending:
 
-        # check that name follows identifier policy
-        if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name) is None:
-            raise ValueError(f"Invalid identifier: {name!r}")
+        current = pending.pop()
 
-    # Var: check name
-    if type(term) is Var:
-        validateName(term.name)
-        return
+        if type(current) in (Var, Lam):
+            # Variables and lambda binders follow the same identifier policy
+            name = current.name
+            # Reject non-string names before applying the identifier expression
+            if not isinstance(name, str):
+                raise ValueError(f'Expected a string, got {name!r}')
+            # Names such as PLUS remain valid; encoding abbreviations are not reserved
+            if re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', name) is None:
+                raise ValueError(f'Invalid identifier: {name!r}')
 
-    # Lam: check name, then recursively validate body
-    if type(term) is Lam:
-        validateName(term.name)
-        validateTarget(term.body)
-        return
+            if type(current) is Lam:
+                # The binder is valid; continue checking the body
+                pending.append(current.body)
 
-    # App: recursively validate both function and argument
-    if type(term) is App:
-        validateTarget(term.function)
-        validateTarget(term.argument)
-        return
+        elif type(current) is App:
+            # Validate both children, visiting the function before the argument
+            pending.append(current.argument)
+            pending.append(current.function)
 
-    # reject all other types
-    raise TypeError(f"Unsupported target node: {type(term).__name__}")
+        else:
+            raise TypeError(f'Unsupported target node: {type(current).__name__}')
 
 
-if __name__ == "__main__":
-    # Running this file should print:
-    # ((lam x. x) y)
-    example = App(Lam("x", Var("x")), Var("y"))
+if __name__ == '__main__':
+    # Running this file should print: ((lam x. x) y)
+    example = App(Lam('x', Var('x')), Var('y'))
     print(pretty(example))
