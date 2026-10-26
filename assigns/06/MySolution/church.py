@@ -116,3 +116,249 @@ def churchSuccessor() -> TargetTerm:
 
     # Wrap the body in lambdas for n, f, and x
     return Lam('n', Lam('f', Lam('x', succ)))
+
+
+# ------------------------------------------------------------------
+# Natural-number operations
+# ------------------------------------------------------------------
+
+def churchPredecessor() -> TargetTerm:
+    """
+    PRED n = max(n - 1, 0)
+
+    Use pairs to track the previous and current numbers:
+        (a, b) -> (b, b + 1)
+
+    Starting with (0, 0):
+        0 iterations -> (0, 0)
+        1 iteration  -> (0, 1)
+        2 iterations -> (1, 2)
+
+    Return the first component after n iterations.
+    """
+
+    # Build SECOND p using churchSecond()
+    sec = App(churchSecond(), Var('p'))
+
+    # Build SUCC (SECOND p) using churchSuccessor()
+    succ = App(churchSuccessor(), sec)
+
+    # Build the transition:
+    # lam(p). PAIR (SECOND p) (SUCC (SECOND p))
+    trans = Lam('p', App(App(churchPair(), sec), succ))
+
+    # Build the initial pair: PAIR NUM(0) NUM(0)
+    init = App(App(churchPair(), churchNatural(0)), churchNatural(0))
+
+    # Build the iteration: n TRANSITION INITIAL_PAIR
+    iteration = App(App(Var('n'), trans), init)
+
+    # Apply FIRST to the iteration result
+    first = App(churchFirst(), iteration)
+
+    # Wrap the expression in lam(n)
+    return Lam('n', first)
+
+
+def churchIsZero() -> TargetTerm:
+    """
+    ISZERO = lam(n). n (lam(ignored). FALSE) TRUE
+
+    Zero returns the starting TRUE
+    A positive numeral applies the function and returns FALSE
+    """
+    
+    temp = App(Var('n'), Lam('ignored', churchFalse()))
+
+    return Lam('n', App(temp, churchTrue()))
+
+
+def churchAddition() -> TargetTerm:
+    """
+    ADD = lam(m). lam(n). lam(f). lam(x). m f (n f x)
+
+    Apply f n times, then apply it m more times
+    """
+
+    # Build ((n f) x)
+    temp = App(App(Var('n'), Var('f')), Var('x'))
+
+    # Build ((m f) INNER_RESULT)
+    temp = App(App(Var('m'), Var('f')), temp)
+
+    # Wrap the body in lambdas for m, n, f, and x.
+    return Lam('m', Lam('n', Lam('f', Lam('x', temp))))
+
+
+def churchSubtraction() -> TargetTerm:
+    """
+    SUB = lam(m). lam(n). n PRED m
+
+    Apply predecessor n times to m
+    Because PRED zero is zero, subtraction truncates at zero
+    """
+
+    # Build ((n PRED) m), expanding churchPredecessor()
+    temp = App(App(Var('n'), churchPredecessor()), Var('m'))
+
+    # Wrap the expression in lambdas for m and n
+    return Lam('m', Lam('n', temp))
+
+
+def churchMultiplication() -> TargetTerm:
+    """
+    MUL = lam(m). lam(n). lam(f). lam(x). m (n f) x
+
+    Repeat the operation "apply f n times" a total of m times
+    """
+
+    # Build (n f)
+    temp = App(Var('n'), Var('f'))
+
+    # Build ((m INNER_RESULT) x)
+    temp = App(App(Var('m'), temp), Var('x'))
+
+    # Wrap the body in lambdas for m, n, f, and x.
+    return Lam('m', Lam('n', Lam('f', Lam('x', temp))))
+
+
+# ------------------------------------------------------------------
+# Boolean operations
+# ------------------------------------------------------------------
+
+def churchNot() -> TargetTerm:
+    """
+    NOT = lam(p). p FALSE TRUE
+    """
+
+    # Build ((p FALSE) TRUE)
+    temp = App(App(Var('p'), churchFalse()), churchTrue())
+
+    # Wrap the expression in lam(p)
+    return Lam('p', temp)
+
+
+def churchAnd() -> TargetTerm:
+    """
+    AND = lam(p). lam(q). p q FALSE
+
+    Accepts two encoded boolean values
+    """
+
+    # Build ((p q) FALSE), expanding churchFalse()
+    temp = App(App(Var('p'), Var('q')), churchFalse())
+
+    # Wrap the expression in lambdas for p and q
+    return Lam('p', Lam('q', temp))
+
+
+def churchOr() -> TargetTerm:
+    """
+    OR = lam(p). lam(q). p TRUE q
+
+    Accepts two encoded boolean values
+    """
+
+    # Build ((p TRUE) q), expanding churchTrue()
+    temp = App(App(Var('p'), churchTrue()), Var('q'))
+
+    # Wrap the expression in lambdas for p and q
+    return Lam('p', Lam('q', temp))
+
+
+# ------------------------------------------------------------------
+# Natural-number comparisons
+# ------------------------------------------------------------------
+
+def churchLessEqual() -> TargetTerm:
+    """
+    LEQ = lam(m). lam(n). ISZERO (SUB m n)
+
+    m <= n exactly when truncated m - n is zero
+    """
+
+    # Build SUB m n using churchSubtraction()
+    temp = App(App(churchSubtraction(), Var('m')), Var('n'))
+
+    # Apply churchIsZero() to that expression
+    temp = App(churchIsZero(), temp)
+
+    # TODO: Wrap the expression in lambdas for m and n
+    return Lam('m', Lam('n', temp))
+
+
+def churchGreaterEqual() -> TargetTerm:
+    """
+    GEQ = lam(m). lam(n). LEQ n m
+    """
+
+    # Apply churchLessEqual() to n, then m
+    temp = App(App(churchLessEqual(), Var('n')), Var('m'))
+
+    # Wrap the expression in lambdas for m and n
+    return Lam('m', Lam('n', temp))
+
+
+def churchLessThan() -> TargetTerm:
+    """
+    LT = lam(m). lam(n). NOT (LEQ n m)
+
+    m < n exactly when n <= m is false
+    """
+
+    # Build LEQ n m
+    temp = App(App(churchLessEqual(), Var('n')), Var('m'))
+
+    # Apply churchNot() to the comparison
+    temp = App(churchNot(), temp)
+
+    # Wrap the expression in lambdas for m and n
+    return Lam('m', Lam('n', temp))
+
+
+def churchGreaterThan() -> TargetTerm:
+    """
+    GT = lam(m). lam(n). NOT (LEQ m n)
+    """
+
+    # Build LEQ m n
+    temp = App(App(churchLessEqual(), Var('m')), Var('n'))
+
+    # Apply churchNot() to the comparison
+    temp = App(churchNot(), temp)
+
+    # Wrap the expression in lambdas for m and n
+    return Lam('m', Lam('n', temp))
+
+
+def churchEqual() -> TargetTerm:
+    """
+    EQ = lam(m). lam(n). AND (LEQ m n) (LEQ n m)
+    """
+
+    # Build LEQ m n
+    temp = App(App(churchLessEqual(), Var('m')), Var('n'))
+
+    # Build LEQ n m
+    temp2 = App(App(churchLessEqual(), Var('n')), Var('m'))
+
+    # Apply churchAnd() to both comparisons
+    temp = App(App(churchAnd(), temp), temp2)
+
+    # Wrap the expression in lambdas for m and n
+    return Lam('m', Lam('n', temp))
+
+
+def churchNotEqual() -> TargetTerm:
+    """
+    NEQ = lam(m). lam(n). NOT (EQ m n)
+    """
+
+    # Build EQ m n using churchEqual()
+    temp = App(App(churchEqual(), Var('m')), Var('n'))
+
+    # Apply churchNot() to that expression
+    temp = App(churchNot(), temp)
+
+    # Wrap the expression in lambdas for m and n
+    return Lam('m', Lam('n', temp))
