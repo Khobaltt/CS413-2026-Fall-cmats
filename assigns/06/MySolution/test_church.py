@@ -16,6 +16,7 @@ from __future__ import annotations
 import re
 import unittest
 
+import church
 from church import (
     identity,
     churchTrue,
@@ -27,6 +28,9 @@ from church import (
     churchSuccessor,
 )
 from target import Var, Lam, App, validateTarget
+from scope import freeVariables
+from observers import observe
+from compiler import callByValueZ
 
 
 def bindingShape(term, binders=()):
@@ -192,6 +196,74 @@ class TestBasicChurchBuilders(unittest.TestCase):
                 term = churchNatural(number)
                 self.assertIsNone(validateTarget(term))
                 self.assertPureAndClosed(term)
+
+
+class TestChurchOperations(unittest.TestCase):
+    def assertOperation(self, builder, inputs, kind, expected):
+        term = builder()
+        self.assertIsNone(validateTarget(term))
+        self.assertEqual(freeVariables(term), set())
+        for value in inputs:
+            argument = (church.churchTrue() if value else church.churchFalse()) \
+                if type(value) is bool else church.churchNatural(value)
+            term = App(term, argument)
+        result = observe(term, kind, 10000)
+        self.assertEqual(result.status, 'completed', result.message)
+        self.assertIs(type(result.value), type(expected))
+        self.assertEqual(result.value, expected)
+
+    def test_successor_predecessor_and_zero(self):
+        for number, successor, predecessor, zero in [
+            (0, 1, 0, True), (1, 2, 0, False), (4, 5, 3, False),
+        ]:
+            with self.subTest(number=number):
+                self.assertOperation(church.churchSuccessor, [number], 'nat', successor)
+                self.assertOperation(church.churchPredecessor, [number], 'nat', predecessor)
+                self.assertOperation(church.churchIsZero, [number], 'bool', zero)
+
+    def test_arithmetic_with_zero_equal_and_unequal_operands(self):
+        for a, b, total, difference, product in [
+            (0, 0, 0, 0, 0), (0, 3, 3, 0, 0), (3, 0, 3, 3, 0),
+            (2, 2, 4, 0, 4), (2, 5, 7, 0, 10), (5, 2, 7, 3, 10),
+        ]:
+            with self.subTest(a=a, b=b):
+                self.assertOperation(church.churchAddition, [a, b], 'nat', total)
+                self.assertOperation(church.churchSubtraction, [a, b], 'nat', difference)
+                self.assertOperation(church.churchMultiplication, [a, b], 'nat', product)
+
+    def test_every_comparison_with_explicit_expected_values(self):
+        builders = [church.churchLessThan, church.churchLessEqual,
+                    church.churchGreaterThan, church.churchGreaterEqual,
+                    church.churchEqual, church.churchNotEqual]
+        for a, b, expected in [
+            (0, 0, (False, True, False, True, True, False)),
+            (1, 3, (True, True, False, False, False, True)),
+            (3, 1, (False, False, True, True, False, True)),
+            (2, 2, (False, True, False, True, True, False)),
+        ]:
+            for builder, answer in zip(builders, expected):
+                with self.subTest(builder=builder.__name__, a=a, b=b):
+                    self.assertOperation(builder, [a, b], 'bool', answer)
+
+    def test_boolean_truth_tables(self):
+        for left, right, conjunction, disjunction in [
+            (False, False, False, False), (False, True, False, True),
+            (True, False, False, True), (True, True, True, True),
+        ]:
+            with self.subTest(left=left, right=right):
+                self.assertOperation(church.churchAnd, [left, right], 'bool', conjunction)
+                self.assertOperation(church.churchOr, [left, right], 'bool', disjunction)
+        self.assertOperation(church.churchNot, [True], 'bool', False)
+        self.assertOperation(church.churchNot, [False], 'bool', True)
+
+    def test_every_combinator_is_closed_and_pure(self):
+        builders = [getattr(church, name) for name in dir(church)
+                    if name.startswith('church') and name != 'churchNatural']
+        for builder in builders + [church.identity, callByValueZ]:
+            with self.subTest(builder=builder.__name__):
+                term = builder()
+                self.assertIsNone(validateTarget(term))
+                self.assertEqual(freeVariables(term), set())
 
 
 if __name__ == "__main__":
