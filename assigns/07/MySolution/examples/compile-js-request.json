@@ -1,0 +1,9 @@
+{
+  "jsonrpc": "2.0",
+  "id": "compile-js",
+  "method": "lambda.compile",
+  "params": {
+    "source": "42",
+    "target": "javascript"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "error": {
+    "code": -32011,
+    "data": {
+      "detail": "unbound variable 'missing'",
+      "kind": "type"
+    },
+    "message": "LAMBDA type error"
+  },
+  "id": "type-error",
+  "jsonrpc": "2.0"
+}

@@ -1,0 +1,8 @@
+{
+  "jsonrpc": "2.0",
+  "id": "factorial",
+  "method": "lambda.interpret",
+  "params": {
+    "source": "let fact : sint -> sint = fix fact(n: sint): sint => if n <= 1 then 1 else n * fact(n - 1) in fact(6) end"
+  }
+}
