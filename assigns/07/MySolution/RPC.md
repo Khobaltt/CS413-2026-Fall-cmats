@@ -1,6 +1,6 @@
 # LAMBDA3 JSON-RPC contract, API version 1.0
 
-Transport: `POST http://127.0.0.1:5000/rpc`, `Content-Type: application/json`.
+Transport: `POST http://127.0.0.1:8000/rpc`, `Content-Type: application/json`.
 JSON is UTF-8. Names are case-sensitive. Extra envelope members are ignored.
 All methods require an explicit object `params` with exactly the keys below;
 missing params, arrays, extra keys, wrong types, and invalid values produce
@@ -35,7 +35,7 @@ Requests carry `jsonrpc: "2.0"`, a string `method`, object `params`, and an
 optional `id`. IDs may be strings, finite JSON numbers, or null, never booleans,
 arrays, or objects. Explicit null is a call ID; absent ID is a notification.
 Replies preserve a usable ID and have exactly one of `result` and `error`.
-Invalid envelopes preserve a usable supplied ID; otherwise the ID is null.
+Invalid envelopes return an Invalid Request error with id: null.
 Invalid requests without IDs receive an error; they are not notifications.
 
 Valid notifications are processed but have no response, even for unknown

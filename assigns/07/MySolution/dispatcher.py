@@ -14,7 +14,7 @@ def dispatch_one(item, service):
     request_id = item.get("id")
     valid_id = usable_id(request_id)
     if item.get("jsonrpc") != "2.0" or not isinstance(item.get("method"), str) or not valid_id:
-        return RpcError(-32600, "Invalid Request").response(request_id if valid_id else None)
+        return RpcError(-32600, "Invalid Request").response(None)
     notification = "id" not in item
     try:
         # Missing params is a method-level error, including for notifications

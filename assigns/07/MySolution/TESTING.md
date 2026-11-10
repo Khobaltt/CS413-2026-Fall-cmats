@@ -9,7 +9,7 @@ python3 -m compileall -q MySolution
 ```
 
 Observed on November 9, 2026 with Python 3.12.14, Flask 3.1.3 and jsonschema
-4.26.0: **27 tests passed**, no skipped tests, in 1.753 seconds. Subtests
+4.26.0: **27 tests passed**, no skipped tests, in 1.810 seconds. Subtests
 exercise additional parameter and source combinations. The expected runtime
 failure test deliberately logs a server-side ZeroDivisionError; the response
 contains only -32603, with no exception detail. This log is expected and does

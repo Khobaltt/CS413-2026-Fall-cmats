@@ -31,4 +31,4 @@ def create_app(service=None):
     return app
 
 if __name__ == "__main__":
-    create_app().run(host="127.0.0.1", port=5000, debug=False)
+    create_app().run(host="127.0.0.1", port=8000, debug=False)

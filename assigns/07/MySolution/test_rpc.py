@@ -59,7 +59,7 @@ class RpcTests(unittest.TestCase):
                         {'jsonrpc': '1.0', 'method': 'service.health', 'id': 9},
                         *({'jsonrpc': '2.0', 'method': 'service.health', 'id': value}
                           for value in (True, [], {}))):
-            expected = 9 if isinstance(payload, dict) and payload.get('id') == 9 else None
+            expected = None
             self.error(self.client.post('/rpc', data=json.dumps(payload), content_type='application/json'), -32600, expected)
 
     def test_unknown_method(self):
