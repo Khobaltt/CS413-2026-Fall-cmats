@@ -188,3 +188,6 @@ flowchart TD
   L --> S[Lazy stream]
   S --> T
 ```
+
+<!-- Browser interaction design -->
+Start closes an existing ID and opens a fresh search. Reset closes the ID and clears the display. Step consumes exactly one event. Play consumes one event per speed interval. Next solution consumes incrementally until a solution or done. Pause cancels the playback generation, preventing new fetches; an already in-flight event is rendered before stopping. Reset waits for pending work before closing, preventing lost IDs. Controls are disabled during conflicting actions.

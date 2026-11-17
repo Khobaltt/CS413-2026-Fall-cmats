@@ -1,0 +1,39 @@
+<!-- Accessible board, playback controls, and visible status -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>N-Queens · Search in motion</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/client.mjs"></script>
+</head>
+<body>
+<main>
+  <header><p class="eyebrow">LAMBDA3 / CPS / LAZY STREAMS</p>
+    <h1>Search in motion<span>N-Queens</span></h1>
+    <p>One row at a time. Follow each choice, conflict, and return.</p></header>
+  <div class="layout">
+    <section aria-label="Queen puzzle"><div id="board" role="img" aria-label="Empty 8 by 8 chessboard"></div>
+      <p class="legend"><span>◌ Try</span><span>♛ Place</span><span>× Reject</span><span>↶ Backtrack</span><span>✓ Solution</span></p>
+    </section>
+    <aside>
+      <div class="metric"><strong id="count">0</strong><span>solutions found</span></div>
+      <label for="size">Board size</label>
+      <select id="size"><option>4</option><option>5</option><option>6</option><option>7</option><option selected>8</option><option>9</option><option>10</option></select>
+      <div class="controls">
+        <button id="start" class="primary">Start</button><button id="step">Step</button>
+        <button id="play">Play</button><button id="next">Next solution</button>
+        <button id="reset">Reset</button>
+      </div>
+      <label for="speed">Delay between events <output id="speed-value">150 ms</output></label>
+      <input id="speed" type="range" min="0" max="1000" step="10" value="150">
+      <p id="status" role="status" aria-live="polite">Ready. Start a search to begin.</p>
+      <p id="error" role="alert" hidden></p>
+      <h2>Search trace</h2><ol id="log" aria-label="Recent search events"></ol>
+    </aside>
+  </div>
+  <footer>Depth-first search · Columns left to right · Events requested on demand</footer>
+</main>
+</body>
+</html>
