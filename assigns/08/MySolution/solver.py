@@ -22,3 +22,23 @@ def invoke(function, value):
 
 def open_stream(size):
     return invoke(program().arg1[0], L.D0Vint(size))
+
+"""Force precisely one cell and translate its event"""
+def force(stream):
+    env = L.ENVcns('stream', stream, L.ENVnil())
+    return L.d0exp_evaluate(L.d0exp_parse('lazy_eval(stream)'), env)
+
+def event_json(value):
+    tag, row, column, board = value.arg1
+    names = ('try', 'place', 'reject', 'backtrack', 'solution', 'done')
+    result = {'event': names[tag.arg1]}
+    if tag.arg1 == 5:
+        return result
+    columns, items = [], board.arg1
+    while isinstance(items, L.fnlist_cons):
+        columns.append(items.arg1.arg1)
+        items = items.arg2
+    result['board'] = columns[::-1]
+    if tag.arg1 < 4:
+        result.update(row=row.arg1, column=column.arg1)
+    return result
