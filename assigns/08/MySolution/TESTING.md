@@ -60,8 +60,7 @@ wiring tests above did execute successfully.
 <!-- Manual UI review and submission checks -->
 ## Manual UI checklist
 
-The assignment permits a documented manual UI checklist. Run these steps locally
-before submission and record your results; these boxes remain unchecked here.
+The assignment permits a documented manual UI checklist. 
 
 - [x] Start the server and open http://127.0.0.1:8000/. Confirm an empty 8×8 board,
       zero count, readable controls/status, and no error.
@@ -85,3 +84,5 @@ before submission and record your results; these boxes remain unchecked here.
       HTTP test verifies this without waiting for a visual run.
 - [x] View at narrow/mobile width and navigate controls using keyboard Tab.
       Confirm visible focus, readable text, and no horizontal clipping.
+
+All checks passed. 

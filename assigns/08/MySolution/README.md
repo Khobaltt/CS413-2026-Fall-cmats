@@ -33,10 +33,8 @@ assigns/08/
     static/               # index.html, style.css, client.mjs
     tests/                # Python, JS, optional browser smoke test
     DESIGN.md
-    PLAN.md
     TESTING.md
     AI-TRANSCRIPT.md
-    COMMIT-MESSAGES.md
     README.md
 ```
 
