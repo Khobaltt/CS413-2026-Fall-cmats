@@ -81,3 +81,17 @@ class Handler(BaseHTTPRequestHandler):
             return
         filename, mime = files[name]
         self.respond(200, (STATIC / filename).read_bytes(), mime)
+
+# Reproducible local entry point 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int, default=8000)
+    args = parser.parse_args()
+    server = Server(('127.0.0.1', args.port))
+    print(f'Queen search: http://127.0.0.1:{server.server_port}', flush=True)
+    try:
+        server.serve_forever(poll_interval=1)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()

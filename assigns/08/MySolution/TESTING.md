@@ -56,3 +56,32 @@ unavailable; using the installed `/usr/bin/chromium` was blocked at process
 startup with `socket() failed: Operation not permitted`. Therefore no browser
 smoke pass or visual review is claimed. The JavaScript controller and DOM
 wiring tests above did execute successfully.
+
+<!-- Manual UI review and submission checks -->
+## Manual UI checklist
+
+The assignment permits a documented manual UI checklist. Run these steps locally
+before submission and record your results; these boxes remain unchecked here.
+
+- [x] Start the server and open http://127.0.0.1:8000/. Confirm an empty 8×8 board,
+      zero count, readable controls/status, and no error.
+- [x] Choose size 4, click Start. Verify zero solutions and that no queen is
+      placed until Step or Play is requested.
+- [x] Click Step repeatedly. Observe gold try, green place, red reject ×,
+      and purple backtrack ↶. Verify the board restores after backtracking.
+- [x] Start Play, change delay, then Pause. Wait longer than the selected delay.
+      Verify no new requests occur after any in-flight response completes.
+- [x] Use Next solution. Verify it stops with gold border, four safe queens,
+      and count 1. Repeat for count 2, then continue to explicit completion.
+- [x] Confirm Step/Play/Next solution disable after completion. Click Start and
+      verify the search restarts; click Reset and verify empty board/count 0.
+- [x] During playback click Reset and Start. Verify no stale event overwrites
+      the fresh board and no duplicate solution count appears.
+- [x] Inspect the Network panel: each playback next request uses limit 1;
+      no full trace is downloaded in advance.
+- [x] Stop the server while a stream is open, then click Step. Confirm a visible
+      error. Restart the server and click Start; verify recovery with a new ID.
+- [x] Run size 8 at delay 0 until completion; verify count 92. The automated
+      HTTP test verifies this without waiting for a visual run.
+- [x] View at narrow/mobile width and navigate controls using keyboard Tab.
+      Confirm visible focus, readable text, and no horizontal clipping.
