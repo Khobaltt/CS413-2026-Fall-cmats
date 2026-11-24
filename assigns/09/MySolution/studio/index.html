@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LAMBDA-studio</title>
+    <link rel="stylesheet" href="/studio/style.css">
+    <script type="module" src="/studio/app.js"></script>
+</head>
+<body>
+    <header class="masthead">
+        <div>
+            <h1>LAMBDA-studio</h1>
+            <p>Saved programs and reusable test collections</p>
+        </div>
+        <p class="memory-note">Programs and collections are cleared when the storage service stops.</p>
+    </header>
+    <main>
+        <div class="editors">
+            <section aria-labelledby="program-title">
+                <div class="heading">
+                    <h2 id="program-title">Programs</h2>
+                    <span id="program-state" class="state" role="status"></span>
+                </div>
+                <fieldset id="program-controls">
+                    <div class="picker">
+                        <label>Saved programs <select id="program-list"></select></label>
+                        <button type="button" id="program-open">Open</button>
+                        <button type="button" id="program-new">New</button>
+                    </div>
+                    <form id="program-form">
+                        <label>Name <input name="name" required></label>
+                        <label>Description <input name="description" maxlength="2000"></label>
+                        <label>Source <textarea name="source" rows="13" required spellcheck="false"></textarea></label>
+                        <div class="actions">
+                            <button class="primary">Save program</button>
+                            <button type="button" id="program-reload">Reload server copy</button>
+                            <button type="button" id="program-delete" class="danger">Delete program</button>
+                        </div>
+                    </form>
+                </fieldset>
+                <p id="program-feedback" class="feedback" role="status"></p>
+            </section>
+            <section aria-labelledby="collection-title">
+                <div class="heading">
+                    <h2 id="collection-title">Test collections</h2>
+                    <span id="collection-state" class="state" role="status"></span>
+                </div>
+                <fieldset id="collection-controls">
+                    <div class="picker">
+                        <label>Saved collections <select id="collection-list"></select></label>
+                        <button type="button" id="collection-open">Open</button>
+                        <button type="button" id="collection-new">New</button>
+                    </div>
+                    <form id="collection-form">
+                        <label>Name <input name="name" required></label>
+                        <label>Description <input name="description" maxlength="2000"></label>
+                        <div class="actions">
+                            <button class="primary">Save collection</button>
+                            <button type="button" id="collection-reload">Reload server copy</button>
+                            <button type="button" id="collection-delete" class="danger">Delete collection</button>
+                        </div>
+                    </form>
+                    <div id="case-section" class="case-section" hidden>
+                        <div class="heading">
+                            <h3>Test cases</h3>
+                            <span id="case-state" class="state" role="status"></span>
+                        </div>
+                        <div class="picker">
+                            <label>Saved cases <select id="case-list"></select></label>
+                            <button type="button" id="case-open">Open</button>
+                            <button type="button" id="case-new">New</button>
+                        </div>
+                        <form id="case-form">
+                            <label>Name <input name="name" required></label>
+                            <label>Description <input name="description" maxlength="2000"></label>
+                            <label>Source snapshot <textarea name="source" rows="4" required spellcheck="false"></textarea></label>
+                            <label>Expected outcome
+                                <select name="kind">
+                                    <option value="value">Formatted value</option>
+                                    <option value="syntax">Syntax error</option>
+                                    <option value="type">Type error</option>
+                                </select>
+                            </label>
+                            <label id="value-label">Formatted value <textarea name="value" rows="2" spellcheck="false"></textarea></label>
+                            <div class="actions">
+                                <button class="primary">Save case</button>
+                                <button type="button" id="case-delete" class="danger">Delete case</button>
+                            </div>
+                        </form>
+                    </div>
+                </fieldset>
+                <p id="collection-feedback" class="feedback" role="status"></p>
+            </section>
+        </div>
+        <section class="run-section" aria-labelledby="run-title">
+            <div class="heading">
+                <h2 id="run-title">Collection results</h2>
+                <button type="button" id="run" class="primary" disabled>Run saved cases</button>
+            </div>
+            <p id="run-summary" role="status">Open a collection with saved cases to run it.</p>
+            <ol id="results"></ol>
+        </section>
+    </main>
+</body>
+</html>

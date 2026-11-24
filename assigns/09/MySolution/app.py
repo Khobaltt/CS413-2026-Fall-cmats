@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, jsonify
 from werkzeug.exceptions import HTTPException
 
@@ -6,6 +8,7 @@ from database.routes import routes
 from database.service import Database
 from database.storage import MemoryStore
 from database.validation import MAX_BODY_BYTES
+from studio_server import studio_routes
 
 HTTP_CODES = {
     400: ("invalid_request", "The request is invalid."),
@@ -17,11 +20,14 @@ HTTP_CODES = {
 }
 
 
-def create_app(store=None):
+def create_app(store=None, *, rpc_url=None):
     app = Flask(__name__, static_folder=None)
     app.config["MAX_CONTENT_LENGTH"] = MAX_BODY_BYTES
     database = Database(store if store is not None else MemoryStore())
     app.register_blueprint(routes(database))
+    if rpc_url is None:
+        rpc_url = os.environ.get("LAMBDA_RPC_URL", "http://127.0.0.1:8000/rpc")
+    app.register_blueprint(studio_routes(rpc_url))
 
     @app.errorhandler(ApiError)
     def api_error(error):
